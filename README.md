@@ -20,6 +20,7 @@ vpngateway
 
 server
 
+caserver
 ## Troubleshooting.
 
 Open issue to tell me about errors.
