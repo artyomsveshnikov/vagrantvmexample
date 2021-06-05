@@ -38,8 +38,8 @@ Vagrant.configure("2") do |config|
     vpngw.ssh.insert_key = false
     vpngw.vm.provision "file", source: "vagrant_machine.pub", destination: "~/.ssh/authorized_keys"
     vpngw.vm.provision "shell", inline: <<-SHELL
-      sudo apt-get update
-      sudo apt-get install -y wget curl zip unzip git build-essential openvpn easy-rsa
+      sudo apt update
+      sudo apt install -y wget curl zip unzip git build-essential openvpn
     SHELL
   end
 
@@ -67,12 +67,37 @@ Vagrant.configure("2") do |config|
     server.ssh.insert_key = false
     server.vm.provision "file", source: "vagrant_machine.pub", destination: "~/.ssh/authorized_keys"
     server.vm.provision "shell", inline: <<-SHELL
-      sudo apt-get update
-      sudo apt-get install -y wget curl zip unzip git build-essential nginx
+      sudo apt update
+      sudo apt install -y wget curl zip unzip git build-essential nginx
     SHELL
   end
 
-  
+  config.vm.define "ca" do |ca|
+    ca.vm.box = "bento/ubuntu-20.04"
+    ca.vm.boot_timeout = 200
+    ca.vm.provider :hyperv do |hyperv|
+      hyperv.vmname = "ca"
+      hyperv.cpus = 1
+      hyperv.memory =  3072
+      hyperv.maxmemory = nil
+      hyperv.ip_address_timeout = 400
+      hyperv.vm_integration_services = {
+        guest_service_interface: true,
+        heartbeat: true,
+        key_value_pair_exchange: true,
+        shutdown: true,
+        time_synchronization: true
+      }
+    end
+    ca.vm.network "public_network", bridge: "Bridge"
+    ca.vm.synced_folder ".", "/vagrant", disabled: true
+    ca.ssh.insert_key = false
+    ca.vm.provision "file", source: "vagrant_machine.pub", destination: "~/.ssh/authorized_keys"
+    ca.vm.provision "shell", inline: <<-SHELL
+      sudo apt update
+      sudo apt install -y wget curl zip unzip git build-essential easy-rsa
+    SHELL
+  end
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
